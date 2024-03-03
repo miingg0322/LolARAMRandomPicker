@@ -16,7 +16,7 @@ public class RandomPicker : MonoBehaviour
     private List<Sprite> originChamps = new List<Sprite>();
     private List<Sprite> pickList = new List<Sprite>();
     private List<Image> blueTeam = new List<Image>();
-    private List<Image> purpleTeam = new List<Image>();
+    private List<Image> redTeam = new List<Image>();
     public int champCount = 10;
     public Sprite basicSprite;
 
@@ -35,6 +35,9 @@ public class RandomPicker : MonoBehaviour
     public float delay = 0.25f;
 
     public Effect effector;
+
+    public InputField blueTeamName;
+    public InputField redTeamName;
 
     private void Awake()
     {
@@ -57,12 +60,12 @@ public class RandomPicker : MonoBehaviour
             blueTeam.Add(go.GetComponent<Image>());
         }
         blueTeam.Sort(TeamComparer);
-        GameObject[] purple = GameObject.FindGameObjectsWithTag("Purple");
-        foreach (var go in purple)
+        GameObject[] red = GameObject.FindGameObjectsWithTag("Red");
+        foreach (var go in red)
         {
-            purpleTeam.Add(go.GetComponent<Image>());
+            redTeam.Add(go.GetComponent<Image>());
         }
-        purpleTeam.Sort(TeamComparer);
+        redTeam.Sort(TeamComparer);
         pickList = originChamps.ToList();
         champCountText.text = $"{pickList.Count} / {originChamps.Count}";
         effector = GetComponent<Effect>();
@@ -93,7 +96,7 @@ public class RandomPicker : MonoBehaviour
         pickList.RemoveAt(randIdx);
         champCountText.text = $"{pickList.Count} / {originChamps.Count}";
     }
-    public void Reset()
+    public void OnResetBtnClicked()
     {
         isPicked = false;
         pickList.Clear();
@@ -104,8 +107,8 @@ public class RandomPicker : MonoBehaviour
         {
             blueTeam[i].sprite = basicSprite;
             blueTeam[i].gameObject.GetComponent<ChampPortrait>().isAssigned = false;
-            purpleTeam[i].sprite = basicSprite;
-            purpleTeam[i].gameObject.GetComponent<ChampPortrait>().isAssigned = false;
+            redTeam[i].sprite = basicSprite;
+            redTeam[i].gameObject.GetComponent<ChampPortrait>().isAssigned = false;
         }
         GameObject[] allTrash = GameObject.FindGameObjectsWithTag("Trash");
         foreach (GameObject trash in allTrash)
@@ -123,8 +126,7 @@ public class RandomPicker : MonoBehaviour
                 InstantiateTrash(selectedChamp.sprite);
                 InitRerollPortrait();
                 RandomPickOne(selectedPortrait);
-                selectedPortrait = null;
-                
+                selectedPortrait = null;               
             }
         }
     }
@@ -146,10 +148,10 @@ public class RandomPicker : MonoBehaviour
             yield return new WaitForSeconds(delay);
             champCountText.text = $"{pickList.Count} / {originChamps.Count}";
             randIdx = Random.Range(0, pickList.Count);
-            purpleTeam[i].sprite = pickList[randIdx];
-            purpleTeam[i].gameObject.GetComponent<ChampPortrait>().isAssigned = true;
+            redTeam[i].sprite = pickList[randIdx];
+            redTeam[i].gameObject.GetComponent<ChampPortrait>().isAssigned = true;
             pickList.RemoveAt(randIdx);
-            effector.PickEffect(purpleTeam[i].transform.parent.gameObject);
+            effector.PickEffect(redTeam[i].transform.parent.gameObject);
             yield return new WaitForSeconds(delay);
             champCountText.text = $"{pickList.Count} / {originChamps.Count}";
         }
@@ -162,7 +164,7 @@ public class RandomPicker : MonoBehaviour
         {
             InstantiateTrash(blueTeam[i].sprite);
             yield return new WaitForSeconds(delay);
-            InstantiateTrash(purpleTeam[i].sprite);
+            InstantiateTrash(redTeam[i].sprite);
             yield return new WaitForSeconds(delay);
         }
     }
@@ -174,7 +176,7 @@ public class RandomPicker : MonoBehaviour
         for (int i = 0; i < champCount; i++)
         {
             blueTeam[i].GetComponent<Button>().interactable = interactable;
-            purpleTeam[i].GetComponent<Button>().interactable = interactable;
+            redTeam[i].GetComponent<Button>().interactable = interactable;
         }
     }
     private void InstantiateTrash(Sprite sprite)
@@ -183,5 +185,17 @@ public class RandomPicker : MonoBehaviour
         trash.transform.SetParent(trashBinContent.transform);        
         trash.transform.GetChild(0).GetComponent<Image>().sprite = sprite;
         effector.InstantiateEffect(trash, transform.root.localScale);
+    }
+
+    public void OnSwitchBtnClicked()
+    {
+        string blueName = blueTeamName.text;
+        string redName = redTeamName.text;
+
+        blueTeamName.text = redName;
+        blueTeamName.textComponent.text = redName;
+
+        redTeamName.text = blueName;
+        redTeamName.textComponent.text = blueName;
     }
 }
